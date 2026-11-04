@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'devsectron@gmail.com' ||
+        request.auth.token.email == 'admin@cyberoshpariksha.in' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Public Catalog: Exam Categories
+    match /exam_categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Public Catalog: Examinations
+    match /examinations/{examId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Questions Bank
+    match /questions/{questionId} {
+      allow read: if isSignedIn() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Mock Tests
+    match /mock_tests/{testId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Test Attempts
+    match /test_attempts/{attemptId} {
+      allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow update: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+
+      // Student answers subcollection
+      match /student_answers/{answerId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    // Study Materials
+    match /study_materials/{materialId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Model Papers
+    match /model_papers/{paperId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Subscription Plans
+    match /subscription_plans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Payments
+    match /payments/{paymentId} {
+      allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Entitlements
+    match /entitlements/{entitlementId} {
+      allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow write: if isSignedIn() || isAdmin();
+    }
+
+    // Coupons
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Current Affairs
+    match /current_affairs/{newsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Bookmarks
+    match /bookmarks/{bookmarkId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Test Connection probe
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

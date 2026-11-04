@@ -1,0 +1,6 @@
+{
+  "name": "CYBEROSH PARIKSHA - Online Examination & EdTech Ecosystem",
+  "description": "Comprehensive competitive examination preparation platform for JEE, NEET, STET, CTET, BPSC, Banking, Railway and SSC with live CBT test engine, study library, question bank, and performance analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

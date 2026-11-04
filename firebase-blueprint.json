@@ -1,0 +1,240 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role and state metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin", "super_admin", "content_manager", "reviewer"] },
+        "target_exam_id": { "type": "string" },
+        "state": { "type": "string" },
+        "streak_days": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ExamCategory": {
+      "title": "ExamCategory",
+      "description": "Category group for examinations",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "display_order": { "type": "number" },
+        "is_active": { "type": "boolean" }
+      },
+      "required": ["name", "slug"]
+    },
+    "Examination": {
+      "title": "Examination",
+      "description": "Competitive examination details and syllabus",
+      "type": "object",
+      "properties": {
+        "category_id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "full_name": { "type": "string" },
+        "eligibility": { "type": "string" },
+        "frequency": { "type": "string" },
+        "conducting_body": { "type": "string" },
+        "official_website": { "type": "string" },
+        "description": { "type": "string" },
+        "is_featured": { "type": "boolean" },
+        "is_active": { "type": "boolean" },
+        "display_order": { "type": "number" }
+      },
+      "required": ["name", "slug", "category_id"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Examination practice question with bilingual text and options",
+      "type": "object",
+      "properties": {
+        "exam_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "question_type": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "marks": { "type": "number" },
+        "negative_marks": { "type": "number" },
+        "question_en": { "type": "string" },
+        "question_hi": { "type": "string" },
+        "correct_answer": { "type": "string" },
+        "solution_en": { "type": "string" },
+        "solution_hi": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["exam_id", "question_en", "correct_answer"]
+    },
+    "MockTest": {
+      "title": "MockTest",
+      "description": "CBT mock test configuration and timing rules",
+      "type": "object",
+      "properties": {
+        "exam_id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "test_type": { "type": "string" },
+        "duration_minutes": { "type": "number" },
+        "total_questions": { "type": "number" },
+        "total_marks": { "type": "number" },
+        "negative_marking": { "type": "number" },
+        "is_free": { "type": "boolean" },
+        "is_published": { "type": "boolean" }
+      },
+      "required": ["exam_id", "title", "duration_minutes"]
+    },
+    "TestAttempt": {
+      "title": "TestAttempt",
+      "description": "Student examination attempt record and results",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "test_id": { "type": "string" },
+        "started_at": { "type": "string" },
+        "server_deadline": { "type": "string" },
+        "submitted_at": { "type": "string" },
+        "time_taken_seconds": { "type": "number" },
+        "status": { "type": "string" },
+        "total_score": { "type": "number" },
+        "max_marks": { "type": "number" },
+        "accuracy": { "type": "number" },
+        "correct_count": { "type": "number" },
+        "incorrect_count": { "type": "number" },
+        "unattempted_count": { "type": "number" },
+        "percentile": { "type": "number" },
+        "rank": { "type": "number" }
+      },
+      "required": ["user_id", "test_id", "started_at", "status"]
+    },
+    "StudyMaterial": {
+      "title": "StudyMaterial",
+      "description": "Educational resource and PDF handbook metadata",
+      "type": "object",
+      "properties": {
+        "exam_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "file_url": { "type": "string" },
+        "file_size_mb": { "type": "number" },
+        "access_level": { "type": "string" },
+        "author": { "type": "string" },
+        "downloads_count": { "type": "number" }
+      },
+      "required": ["title", "file_url", "access_level"]
+    },
+    "ModelPaper": {
+      "title": "ModelPaper",
+      "description": "Previous year paper or model question paper",
+      "type": "object",
+      "properties": {
+        "exam_id": { "type": "string" },
+        "year": { "type": "number" },
+        "paper_name": { "type": "string" },
+        "duration_minutes": { "type": "number" },
+        "max_marks": { "type": "number" },
+        "total_questions": { "type": "number" },
+        "paper_type": { "type": "string" },
+        "pdf_url": { "type": "string" },
+        "answer_key_url": { "type": "string" }
+      },
+      "required": ["exam_id", "year", "paper_name"]
+    },
+    "SubscriptionPlan": {
+      "title": "SubscriptionPlan",
+      "description": "Pricing tier and entitlement configuration",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "price_inr": { "type": "number" },
+        "duration_days": { "type": "number" },
+        "exam_access_type": { "type": "string" },
+        "is_popular": { "type": "boolean" },
+        "is_active": { "type": "boolean" }
+      },
+      "required": ["name", "code", "price_inr"]
+    },
+    "Entitlement": {
+      "title": "Entitlement",
+      "description": "Active student subscription entitlement",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "plan_name": { "type": "string" },
+        "start_date": { "type": "string" },
+        "end_date": { "type": "string" },
+        "is_active": { "type": "boolean" }
+      },
+      "required": ["user_id", "plan_id", "end_date"]
+    },
+    "CurrentAffairs": {
+      "title": "CurrentAffairs",
+      "description": "Daily and monthly current affairs updates",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "summary": { "type": "string" },
+        "content": { "type": "string" },
+        "source": { "type": "string" }
+      },
+      "required": ["date", "title", "summary"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and account settings"
+    },
+    "/exam_categories/{categoryId}": {
+      "schema": "ExamCategory",
+      "description": "Categories for competitive exams"
+    },
+    "/examinations/{examId}": {
+      "schema": "Examination",
+      "description": "Official examination records"
+    },
+    "/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Centralized examination question bank"
+    },
+    "/mock_tests/{testId}": {
+      "schema": "MockTest",
+      "description": "Full-length and sectional CBT mock examinations"
+    },
+    "/test_attempts/{attemptId}": {
+      "schema": "TestAttempt",
+      "description": "Student mock test sessions and evaluated scores"
+    },
+    "/study_materials/{materialId}": {
+      "schema": "StudyMaterial",
+      "description": "Digital library notes and syllabus handbooks"
+    },
+    "/model_papers/{paperId}": {
+      "schema": "ModelPaper",
+      "description": "Year-wise previous papers and model sets"
+    },
+    "/subscription_plans/{planId}": {
+      "schema": "SubscriptionPlan",
+      "description": "Commercial preparation passes and pricing"
+    },
+    "/entitlements/{entitlementId}": {
+      "schema": "Entitlement",
+      "description": "Active user access entitlements"
+    },
+    "/current_affairs/{newsId}": {
+      "schema": "CurrentAffairs",
+      "description": "Daily current affairs digests"
+    }
+  }
+}

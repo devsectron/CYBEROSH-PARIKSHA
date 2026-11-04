@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* CYBEROSH PARIKSHA – Platform Background Textures & Ambience */
+
+/* 1. Computer Based Test (CBT) Grid Pattern */
+.bg-cbt-grid {
+  background-image: 
+    linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-cbt-grid-dark {
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* 2. OMR Bubble Sheet Micro-Texture */
+.bg-omr-pattern {
+  background-image: radial-gradient(circle, rgba(245, 158, 11, 0.08) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.bg-omr-pattern-subtle {
+  background-image: radial-gradient(circle, rgba(100, 116, 139, 0.12) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+
+/* 3. Mathematical & Blueprint Coordinate Axes */
+.bg-blueprint-grid {
+  background-image: 
+    radial-gradient(circle at center, rgba(37, 99, 235, 0.12) 0%, transparent 70%),
+    linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+}
+
+/* 4. Ambient Drift Animations for Academic Glyphs & Motifs */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(12px) rotate(-2deg);
+  }
+}
+
+@keyframes pulseTelemetry {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-float-gentle {
+  animation: floatGentle 8s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 10s ease-in-out infinite;
+}
+
+.animate-pulse-telemetry {
+  animation: pulseTelemetry 4s ease-in-out infinite;
+}

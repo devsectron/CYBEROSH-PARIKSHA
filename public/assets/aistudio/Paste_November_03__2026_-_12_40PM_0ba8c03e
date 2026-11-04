@@ -1,0 +1,1479 @@
+# CYBEROSH PARIKSHA
+# MASTER FULL-STACK DEVELOPMENT PROMPT
+## Complete Production-Ready Online Examination Preparation Ecosystem
+
+---
+
+# 1. YOUR ROLE
+
+Act as a Principal Software Architect, Senior Full-Stack Engineer, Database Architect, UI/UX Designer, EdTech Product Manager, Cybersecurity Engineer, QA Engineer and DevOps Engineer.
+
+You are responsible for designing, developing, testing, securing and deploying a complete online competitive examination preparation platform.
+
+Your task is not to create a simple website, static landing page, UI prototype or demonstration dashboard.
+
+You must develop a complete, functional, production-oriented EdTech ecosystem with working frontend, backend, database, authentication, content management, examination engine, payment integration, analytics and administration.
+
+Work autonomously through all development stages, maintain a project implementation checklist, verify each module and resolve errors before declaring the project complete.
+
+Do not stop after producing architecture or sample code. Implement the actual application.
+
+# 2. PROJECT IDENTITY
+
+Parent Brand: CYBEROSH
+
+Product Name: CYBEROSH PARIKSHA
+
+Product Category: Online Examination Preparation and EdTech Ecosystem.
+
+Primary Market: Bihar, India.
+
+Secondary Market: All India.
+
+Target Users:
+- School students.
+- College students.
+- Engineering aspirants.
+- Medical aspirants.
+- Government job aspirants.
+- Teaching examination aspirants.
+- Banking and railway examination aspirants.
+- Other competitive examination candidates.
+
+Business Model: Premium/Freemium.
+
+Initial Platform: Responsive Web Application.
+
+Primary Languages: Hindi and English.
+
+Tagline:
+
+"Prepare Smart. Practice More. Succeed."
+
+Product Vision:
+
+Build a centralized online examination preparation ecosystem where students can discover examinations, access educational resources, download study materials, practice model papers, attempt online mock examinations, analyze their performance and purchase premium examination preparation products.
+
+The platform must support the addition of new examinations without requiring fundamental changes to the application architecture.
+
+# 3. CORE PRODUCT REQUIREMENTS
+
+Develop the following integrated products:
+
+1. PARIKSHA LIBRARY – Digital study material and notes repository.
+2. PARIKSHA PAPERS – Model papers and previous year question papers.
+3. PARIKSHA TEST – Online mock examination and CBT engine.
+4. PARIKSHA QUIZ – Daily quizzes and topic-wise practice.
+5. PARIKSHA ANALYTICS – Student performance and preparation reports.
+6. PARIKSHA CURRENT – Current affairs and general knowledge.
+7. PARIKSHA LEARN – Courses and video learning, architected for future activation.
+8. PARIKSHA COMMUNITY – Student discussions and doubt solving, architected for future activation.
+
+All modules must operate through one centralized student account and administration system.
+
+# 4. EXAMINATION CATALOGUE
+
+Create a fully dynamic examination management system.
+
+Initially configure the following categories.
+
+## Engineering
+- JEE Main
+- JEE Advanced
+- Polytechnic Entrance
+- State Engineering Entrance
+
+## Medical
+- NEET UG
+
+## Teaching
+- Bihar STET
+- CTET
+- Bihar BPSC TRE
+- UPTET
+- KVS
+- NVS
+- PGT
+- TGT
+- PRT
+
+## Banking
+- IBPS PO
+- IBPS Clerk
+- SBI PO
+- SBI Clerk
+- RBI Assistant
+- RBI Grade B
+
+## Railway
+- RRB NTPC
+- RRB Group D
+- RRB ALP
+- RRB Technician
+
+## SSC
+- SSC CGL
+- SSC CHSL
+- SSC GD
+- SSC MTS
+
+## Civil Services
+- BPSC
+- UPSC
+- State PSC
+
+## Police and Defence
+- Bihar Police
+- State Police Recruitment
+- NDA
+- CDS
+
+## Other
+- CUET
+- University Entrance
+- Other State Competitive Examinations
+
+IMPORTANT:
+
+These categories are initial data, not hardcoded frontend content.
+
+Administrators must be able to create, edit, disable, reorder and configure examinations dynamically.
+
+Each examination must have its own syllabus, subjects, chapters, topics, examination pattern, question types, marking scheme and test configurations.
+
+# 5. WEBSITE STRUCTURE
+
+Build the following public pages:
+
+- Home
+- About Us
+- All Examinations
+- Examination Details
+- Study Materials
+- Model Papers
+- Previous Year Papers
+- Mock Tests
+- Daily Quizzes
+- Question Bank
+- Current Affairs
+- Courses
+- Pricing
+- Contact
+- Blog
+- Login
+- Registration
+- Forgot Password
+- Terms and Conditions
+- Privacy Policy
+- Refund Policy
+- Content Disclaimer
+
+Create SEO-friendly examination pages.
+
+Examples:
+
+/exams/jee-main
+/exams/neet-ug
+/exams/bihar-stet
+/exams/ctet
+/exams/bpsc
+/exams/ibps-po
+/exams/rrb-ntpc
+
+# 6. HOMEPAGE AND UI/UX DESIGN
+
+Create a premium, modern Indian EdTech website.
+
+Design references:
+- Physics Wallah
+- Testbook
+- Adda247
+- Unacademy
+- Modern computer-based examination interfaces.
+
+Use these only as design inspiration. Do not copy their branding, text or proprietary layouts.
+
+Brand identity:
+
+- Primary: Deep Navy Blue.
+- Secondary: Royal Blue.
+- Accent: Amber/Orange.
+- Background: White and light grey.
+- Typography: Clean, modern and readable.
+
+The interface must be responsive and accessible.
+
+Homepage sections:
+
+1. Hero banner.
+2. Search examinations.
+3. Popular examinations.
+4. Examination categories.
+5. Free demo tests.
+6. Latest study materials.
+7. Latest model papers.
+8. Premium test series.
+9. Daily quiz.
+10. Student performance features.
+11. Upcoming examination notifications.
+12. Testimonials with genuine verified data only.
+13. FAQ.
+14. Footer.
+
+Hero headline:
+
+"Your Preparation. Your Platform. Your Success."
+
+Supporting description:
+
+"Prepare for JEE, NEET, Banking, Railway, STET, CTET, BPSC, SSC and other competitive examinations with quality study materials, practice questions and smart online mock tests."
+
+Buttons:
+- Start Preparing
+- Explore Mock Tests
+
+Implement:
+- Reusable UI components.
+- Consistent design system.
+- Skeleton loaders.
+- Empty states.
+- Error states.
+- Responsive navigation.
+- Accessible forms.
+- Search and filters.
+- Pagination.
+- Confirmation dialogs.
+- Toast notifications.
+
+# 7. TECHNOLOGY STACK
+
+Use a modern and maintainable full-stack architecture.
+
+Frontend:
+- Next.js with App Router.
+- React.
+- TypeScript.
+- Tailwind CSS.
+- shadcn/ui.
+- Lucide icons.
+
+Backend:
+- Next.js server APIs and server-side application services.
+- REST API architecture.
+- Zod validation.
+
+Database:
+- PostgreSQL.
+- Prisma ORM.
+
+Authentication:
+- Auth.js or a suitable secure authentication solution.
+- Email and password.
+- Mobile OTP as an optional configurable feature.
+- Google login as an optional feature.
+- Secure session management.
+
+Storage:
+- S3-compatible private object storage.
+- CDN for permitted public assets.
+
+Payments:
+- Razorpay.
+
+Monitoring:
+- Sentry or equivalent.
+
+Product analytics:
+- PostHog or equivalent.
+
+Deployment:
+- Vercel or equivalent hosting.
+- Managed PostgreSQL.
+- Object storage.
+- CDN.
+- Automated database backups.
+
+Use stable, compatible package versions and document the selected versions.
+
+Do not add unnecessary third-party dependencies.
+
+# 8. DATABASE DESIGN
+
+Design a normalized relational database with proper constraints, foreign keys, indexes and migrations.
+
+Create the following core entities:
+
+IDENTITY:
+- users
+- roles
+- permissions
+- user_roles
+- role_permissions
+- student_profiles
+- admin_profiles
+- user_sessions
+
+EXAMINATION:
+- exam_categories
+- examinations
+- exam_patterns
+- exam_syllabus
+- subjects
+- chapters
+- topics
+
+CONTENT:
+- files
+- study_materials
+- material_categories
+- model_papers
+- previous_year_papers
+- answer_keys
+- content_versions
+- content_reviews
+
+QUESTION BANK:
+- question_banks
+- questions
+- question_versions
+- question_options
+- question_translations
+- question_tags
+- question_topics
+- question_examinations
+- question_explanations
+
+TEST ENGINE:
+- mock_tests
+- test_sections
+- test_questions
+- test_attempts
+- student_answers
+- test_results
+- attempt_events
+- test_review_settings
+
+STUDENT:
+- bookmarks
+- study_progress
+- topic_performance
+- daily_activity
+- student_goals
+
+MONETIZATION:
+- plans
+- products
+- product_examinations
+- subscriptions
+- payments
+- payment_webhooks
+- entitlements
+- coupons
+- refunds
+
+COMMUNICATION:
+- notifications
+- announcements
+- email_logs
+
+ADMINISTRATION:
+- audit_logs
+- content_approval_logs
+- system_settings
+
+Database design requirements:
+
+1. Every entity must have a primary key.
+2. Add appropriate timestamps.
+3. Use foreign keys and constraints.
+4. Prevent duplicate transactions.
+5. Maintain historical test attempts.
+6. Maintain question version history.
+7. Support multiple languages.
+8. Use JSONB only for genuinely flexible structured data.
+9. Implement soft deletion where appropriate.
+10. Add indexes for frequently queried fields.
+
+Important:
+
+Test attempts must retain snapshots of their examination rules, question versions and marks configuration. Future edits must never silently change historical results.
+
+# 9. QUESTION BANK MANAGEMENT
+
+Develop a centralized question bank.
+
+Question attributes:
+
+- Question ID.
+- Question text.
+- Question image.
+- Examination category.
+- Examination.
+- Subject.
+- Chapter.
+- Topic.
+- Difficulty.
+- Question type.
+- Language.
+- Marks.
+- Negative marks.
+- Correct answer.
+- Detailed solution.
+- Tags.
+- Status.
+- Reviewer.
+- Publication date.
+
+Support question formats:
+
+- Single correct MCQ.
+- Multiple correct MCQ.
+- Numerical answer.
+- True/False.
+- Assertion and Reason.
+- Match the following.
+- Passage-based questions.
+- Image-based questions.
+
+Support Hindi and English translations.
+
+Develop a question editor with preview.
+
+Implement bulk question import through CSV and XLSX templates.
+
+Import workflow:
+
+Upload -> Validate -> Preview -> Identify Errors -> Approve -> Import.
+
+Never silently import invalid questions.
+
+Never expose correct answers or explanations to students before the permitted release time.
+
+# 10. STUDY MATERIAL MANAGEMENT
+
+Build a complete educational resource library.
+
+Features:
+
+- Examination filtering.
+- Subject filtering.
+- Chapter filtering.
+- Topic filtering.
+- Language filtering.
+- Free and premium filtering.
+- Search.
+- Pagination.
+- PDF viewing.
+- Authorized downloading.
+- Bookmarks.
+- Recently viewed materials.
+
+Material metadata:
+
+- Title.
+- Description.
+- Examination.
+- Subject.
+- Chapter.
+- Topic.
+- Language.
+- File.
+- Thumbnail.
+- Author.
+- Reviewer.
+- Publication date.
+- Access level.
+- Status.
+
+Support PDF, DOCX, PPTX and image resources where appropriate.
+
+Implement secure uploads, file validation, file size limits, malware scanning and private storage.
+
+Do not expose permanent unrestricted file URLs for premium content.
+
+# 11. MODEL PAPER AND PREVIOUS YEAR PAPER MODULE
+
+Develop a separate paper repository.
+
+Features:
+
+- Year-wise papers.
+- Examination-wise papers.
+- Subject-wise papers.
+- Language selection.
+- Answer keys.
+- Detailed solutions.
+- Downloadable PDFs.
+- Online practice.
+- Attempt tracking.
+
+Each paper should include:
+
+- Examination.
+- Year.
+- Paper name.
+- Subjects.
+- Question count.
+- Duration.
+- Maximum marks.
+- Marking scheme.
+- Negative marking.
+- File attachment.
+- Answer key.
+- Detailed solutions.
+- Publication status.
+- Copyright or licensing information.
+
+Allow authorized administrators to convert a paper into an online mock test.
+
+Respect copyright and licensing restrictions. Only distribute original, licensed or legally authorized materials.
+
+# 12. ONLINE CBT MOCK TEST ENGINE
+
+This is the highest-priority technical module.
+
+Build a robust computer-based examination interface.
+
+Interface elements:
+
+- Examination title.
+- Section selection.
+- Countdown timer.
+- Question text.
+- Question images.
+- Answer options.
+- Previous button.
+- Save and Next.
+- Clear Response.
+- Mark for Review.
+- Question navigation palette.
+- Submit Test.
+- Language switcher.
+- Instructions.
+
+Question palette statuses:
+
+- Not Visited.
+- Not Answered.
+- Answered.
+- Marked for Review.
+- Answered and Marked for Review.
+
+Functional requirements:
+
+1. Full-length mock tests.
+2. Sectional tests.
+3. Subject-wise tests.
+4. Topic-wise tests.
+5. Daily quizzes.
+6. Previous year paper practice.
+7. Randomized tests.
+8. Fixed question sets.
+9. Optional questions.
+10. Multiple question formats.
+11. Section-wise timing.
+12. Configurable negative marking.
+13. Automatic answer saving.
+14. Automatic test submission.
+15. Manual submission confirmation.
+16. Attempt history.
+17. Test resumption according to configured rules.
+
+SECURITY AND RELIABILITY:
+
+- Use server-authoritative examination start time.
+- Store the actual deadline in the database.
+- Validate every answer update.
+- Reject changes after submission or expiry.
+- Use idempotent submission.
+- Handle duplicate requests.
+- Recover saved answers after browser refresh.
+- Synchronize local and server state.
+- Prevent cross-user attempt access.
+- Keep answer keys on the server.
+- Avoid trusting client-side scoring.
+- Prevent accidental duplicate attempts.
+
+The server must be authoritative for test state, deadline and evaluation.
+
+# 13. EXAMINATION RULE CONFIGURATION
+
+Do not assume every examination follows the same rules.
+
+Allow administrators to configure:
+
+- Total duration.
+- Total questions.
+- Section duration.
+- Section sequence.
+- Marks per correct answer.
+- Negative marking.
+- Partial marking.
+- Question types.
+- Optional question groups.
+- Language availability.
+- Navigation rules.
+- Question randomization.
+- Option randomization.
+- Maximum attempts.
+- Test availability dates.
+- Result release dates.
+- Review availability.
+
+Create a reusable examination rules engine.
+
+# 14. RESULT AND EVALUATION ENGINE
+
+Generate server-side results.
+
+For a conventional scoring scheme:
+
+Score = Correct Marks - Incorrect Answer Penalty.
+
+Support examination-specific scoring configurations.
+
+Result dashboard:
+
+- Total marks.
+- Maximum marks.
+- Percentage.
+- Correct answers.
+- Incorrect answers.
+- Unattempted questions.
+- Accuracy.
+- Time taken.
+- Subject-wise performance.
+- Topic-wise performance.
+- Section-wise performance.
+- Rank and percentile when sufficient valid comparison data exists.
+
+Allow students to review:
+
+- Their submitted answer.
+- Correct answer.
+- Detailed explanation.
+- Question difficulty.
+- Time spent.
+- Topic classification.
+
+Make answer review configurable by examination and test.
+
+# 15. STUDENT DASHBOARD
+
+Develop a personalized dashboard.
+
+Features:
+
+- Student profile.
+- Selected examinations.
+- Active subscriptions.
+- Available mock tests.
+- Recent tests.
+- Test history.
+- Average score.
+- Accuracy.
+- Weak subjects.
+- Weak topics.
+- Study materials.
+- Bookmarks.
+- Recommended tests.
+- Preparation goals.
+- Daily activity.
+- Upcoming examinations.
+
+Add a study calendar and revision tracker.
+
+# 16. ANALYTICS AND PERFORMANCE TRACKING
+
+Develop detailed analytics.
+
+Charts:
+
+- Score progression.
+- Subject-wise accuracy.
+- Topic-wise performance.
+- Time management.
+- Test completion.
+- Correct and incorrect responses.
+
+Recommendation engine:
+
+Identify weak topics based on student performance.
+
+Recommend appropriate practice questions and tests.
+
+Avoid presenting unsupported rank predictions or guaranteed success claims.
+
+Calculate rankings only from actual eligible test attempt data.
+
+# 17. DAILY QUIZ AND CURRENT AFFAIRS
+
+Daily quiz categories:
+
+- General Knowledge.
+- Current Affairs.
+- Mathematics.
+- Reasoning.
+- English.
+- General Science.
+- Computer Science.
+- Bihar General Knowledge.
+- Indian Polity.
+- History.
+- Geography.
+
+Features:
+
+- Daily quiz.
+- Question explanations.
+- Quiz history.
+- Streak tracking.
+- Daily leaderboard.
+- Examination-specific quizzes.
+
+Current affairs management must allow administrators to publish daily, weekly and monthly materials.
+
+Use date and source metadata. Keep factual verification and editorial review in the publishing workflow.
+
+# 18. PREMIUM SUBSCRIPTION SYSTEM
+
+Implement a flexible freemium model.
+
+FREE:
+- Sample materials.
+- Demo mock tests.
+- Limited quizzes.
+- Basic result reports.
+
+PREMIUM:
+- Full test series.
+- Premium notes.
+- Detailed solutions.
+- Advanced analytics.
+- Examination-specific preparation packages.
+
+Suggested configurable pricing:
+
+- Monthly: ₹99–149.
+- Quarterly: ₹249–349.
+- Annual: ₹699–999.
+- Individual examination test series.
+- All-Examination Pass.
+
+These prices are initial proposals and must be editable from the admin panel.
+
+Implement:
+
+- Subscription plans.
+- Individual test-series purchases.
+- Coupons.
+- Discounts.
+- Payment history.
+- Renewals.
+- Expiration.
+- Refund management.
+- Premium entitlements.
+
+A single universal entitlement must not accidentally grant access to every examination.
+
+# 19. PAYMENT INTEGRATION
+
+Integrate Razorpay.
+
+Workflow:
+
+1. Select subscription or product.
+2. Create payment order on the backend.
+3. Open payment checkout.
+4. Receive payment response.
+5. Verify payment signature.
+6. Process verified webhook.
+7. Record transaction.
+8. Activate entitlement.
+9. Notify student.
+
+Security:
+
+- Never store card details.
+- Never trust frontend payment status.
+- Verify webhook signatures.
+- Prevent duplicate webhook processing.
+- Use idempotency.
+- Maintain payment audit logs.
+- Handle failed, pending, successful and refunded payments.
+
+Use sandbox mode during development.
+
+# 20. ADMINISTRATION PANEL
+
+Develop a complete administration dashboard.
+
+Modules:
+
+- Dashboard analytics.
+- User management.
+- Role and permission management.
+- Examination categories.
+- Examination configuration.
+- Subjects.
+- Chapters.
+- Topics.
+- Study materials.
+- Model papers.
+- Previous year papers.
+- Question bank.
+- Bulk imports.
+- Question reviews.
+- Mock test creation.
+- Test scheduling.
+- Answer keys.
+- Result management.
+- Subscription plans.
+- Payments.
+- Coupons.
+- Refunds.
+- Announcements.
+- Notifications.
+- Blog.
+- Website settings.
+- Audit logs.
+
+Roles:
+
+- Super Admin.
+- Admin.
+- Content Manager.
+- Question Creator.
+- Reviewer.
+- Student.
+
+Implement fine-grained role-based access control.
+
+Privileged accounts should support MFA.
+
+# 21. CONTENT REVIEW WORKFLOW
+
+Implement a proper educational publishing workflow.
+
+Draft -> Review -> Approved -> Published -> Archived.
+
+Question creators must not automatically publish sensitive examination content without appropriate permissions.
+
+Content reviewers must be able to:
+
+- Verify question accuracy.
+- Verify answer keys.
+- Review explanations.
+- Check translations.
+- Identify duplicate questions.
+- Reject incorrect material.
+- Request corrections.
+
+Record all approval activities.
+
+# 22. NOTIFICATION SYSTEM
+
+Implement:
+
+- In-app notifications.
+- Email notifications.
+- Registration confirmation.
+- Password recovery.
+- New test alerts.
+- New content alerts.
+- Examination reminders.
+- Payment confirmation.
+- Subscription expiration.
+- Result publication.
+
+Keep notifications configurable.
+
+Do not send unnecessary promotional messages without appropriate user consent.
+
+# 23. SEARCH ENGINE OPTIMIZATION
+
+Implement:
+
+- Dynamic page metadata.
+- SEO-friendly slugs.
+- XML sitemap.
+- Robots.txt.
+- Canonical URLs.
+- Open Graph metadata.
+- Structured data where appropriate.
+- Internal linking.
+- Search-friendly content pages.
+- Fast page loading.
+- Blog and educational articles.
+
+Create examination-specific landing pages.
+
+Avoid indexing private dashboards, unpublished content or premium resources without authorization.
+
+# 24. MULTILINGUAL ARCHITECTURE
+
+Support:
+
+- Hindi.
+- English.
+
+Implement language selection at application level.
+
+Support:
+
+- Translated UI.
+- Translated questions.
+- Translated explanations.
+- Separate language-specific study materials.
+- Language-specific examination instructions.
+
+Allow future expansion to other Indian languages.
+
+Do not assume every question or resource has both translations.
+
+# 25. SECURITY ARCHITECTURE
+
+Apply security-by-design.
+
+Implement:
+
+- Secure password hashing.
+- Secure session management.
+- Authentication controls.
+- Authorization checks.
+- RBAC.
+- Object-level access control.
+- Input validation.
+- SQL injection prevention.
+- XSS prevention.
+- CSRF protection where applicable.
+- Rate limiting.
+- Secure headers.
+- File upload validation.
+- Private file storage.
+- Payment verification.
+- Audit logging.
+- Database backups.
+- Secrets management.
+- Error monitoring.
+
+Protect against:
+
+- IDOR.
+- Broken access control.
+- Credential attacks.
+- Session abuse.
+- Unauthorized premium downloads.
+- Answer key exposure.
+- Test manipulation.
+- Duplicate submissions.
+- Payment replay.
+- Malicious file uploads.
+
+Use OWASP application security guidance.
+
+Do not expose sensitive information in frontend bundles, API responses or logs.
+
+# 26. API ARCHITECTURE
+
+Use REST APIs under:
+
+/api/v1/
+
+Organize endpoints by module.
+
+Authentication:
+/auth/register
+/auth/login
+/auth/logout
+/auth/forgot-password
+/auth/reset-password
+
+Student:
+/students/me
+/students/me/analytics
+/students/me/bookmarks
+
+Examinations:
+/exams
+/exams/:id
+/exams/:id/subjects
+
+Materials:
+/materials
+/materials/:id
+/materials/:id/download
+
+Question bank:
+/questions
+/questions/:id
+
+Tests:
+/tests
+/tests/:id
+/attempts/start
+/attempts/:id
+/attempts/:id/answers
+/attempts/:id/submit
+/attempts/:id/result
+
+Subscriptions:
+/plans
+/subscriptions/me
+/payments/create-order
+/payments/verify
+
+Admin:
+/admin/exams
+/admin/questions
+/admin/materials
+/admin/tests
+/admin/students
+/admin/payments
+/admin/analytics
+
+Implement consistent API responses, validation, error codes and authorization.
+
+Document all APIs.
+
+# 27. PROJECT STRUCTURE
+
+Use feature-based architecture.
+
+Organize:
+
+src/
+  app/
+    public/
+    auth/
+    student/
+    admin/
+    exam/
+    api/
+
+  components/
+    ui/
+    navigation/
+    exams/
+    tests/
+    analytics/
+    admin/
+
+  modules/
+    auth/
+    examinations/
+    content/
+    question-bank/
+    mock-engine/
+    evaluation/
+    analytics/
+    subscriptions/
+    payments/
+    notifications/
+
+  lib/
+    db/
+    auth/
+    storage/
+    permissions/
+    validation/
+
+  services/
+  hooks/
+  types/
+
+prisma/
+  schema.prisma
+  migrations/
+  seed.ts
+
+tests/
+  unit/
+  integration/
+  e2e/
+
+docs/
+  architecture.md
+  database.md
+  api.md
+  security.md
+  deployment.md
+  user-guide.md
+
+Adjust the exact directory organization when technically justified, but preserve clear separation of responsibilities.
+
+# 28. TESTING AND QUALITY ASSURANCE
+
+Write automated tests.
+
+UNIT TESTS:
+- Scoring calculations.
+- Negative marking.
+- Question validation.
+- Subscription eligibility.
+- Permission checks.
+- Deadline validation.
+
+INTEGRATION TESTS:
+- Authentication.
+- Question creation.
+- Test creation.
+- Answer saving.
+- Test submission.
+- Result generation.
+- Payment verification.
+- Premium access.
+
+END-TO-END TESTS:
+- Student registration.
+- Login.
+- Examination discovery.
+- Material downloads.
+- Mock test attempts.
+- Test submission.
+- Result viewing.
+- Subscription purchase.
+
+SECURITY TESTS:
+- Unauthorized API access.
+- Cross-user attempt access.
+- Premium content access.
+- Payment replay.
+- Input manipulation.
+- File upload validation.
+
+PERFORMANCE TESTS:
+- Question loading.
+- Answer submission.
+- Concurrent attempts.
+- Result generation.
+- Dashboard loading.
+
+Test with realistic data and multiple concurrent users.
+
+# 29. DEVELOPMENT ROADMAP
+
+Complete every stage.
+
+STAGE 1 – FOUNDATION
+- Project setup.
+- Database setup.
+- Authentication.
+- User management.
+- Design system.
+- Public website.
+- Examination catalogue.
+
+STAGE 2 – CONTENT MANAGEMENT
+- Subject management.
+- Chapter and topic management.
+- Study materials.
+- PDF management.
+- Model papers.
+- Previous year papers.
+
+STAGE 3 – QUESTION BANK
+- Question editor.
+- Question categories.
+- Question versioning.
+- Hindi and English translations.
+- Bulk imports.
+- Review workflow.
+
+STAGE 4 – MOCK TEST ENGINE
+- Test configuration.
+- Section management.
+- CBT interface.
+- Timer.
+- Autosave.
+- Question navigation.
+- Test submission.
+- Negative marking.
+- Result generation.
+
+STAGE 5 – STUDENT ANALYTICS
+- Student dashboard.
+- Test history.
+- Performance charts.
+- Weak topic analysis.
+- Bookmarks.
+- Revision tracking.
+
+STAGE 6 – PREMIUM BUSINESS
+- Subscription management.
+- Product entitlements.
+- Razorpay.
+- Coupons.
+- Payment history.
+- Refund workflows.
+
+STAGE 7 – ADMIN AND OPERATIONS
+- Full administration.
+- Permissions.
+- Notifications.
+- Content approvals.
+- Audit logs.
+- Reporting.
+
+STAGE 8 – OPTIMIZATION
+- SEO.
+- Performance.
+- Security hardening.
+- Mobile responsiveness.
+- Accessibility.
+- Monitoring.
+
+STAGE 9 – DEPLOYMENT
+- Production configuration.
+- Database migrations.
+- Backup strategy.
+- Domain configuration.
+- SSL.
+- CDN.
+- Production deployment.
+- Smoke testing.
+
+STAGE 10 – FUTURE EXPANSION
+Prepare architecture for:
+- Progressive Web App.
+- Android application.
+- Video learning.
+- Live classes.
+- AI-assisted learning.
+- Doubt-solving community.
+- Institutional examination services.
+
+Do not delay the core production launch for optional future modules.
+
+# 30. INITIAL CONTENT SEEDING
+
+Seed the database with initial examination categories and representative examinations.
+
+Create demo content:
+
+- At least 10 examination categories.
+- At least 20 examination records.
+- Representative subjects.
+- Chapters and topics.
+- Sample questions.
+- Sample model tests.
+- Sample study materials.
+
+Clearly label demo content.
+
+Never represent generated sample questions as official previous year questions.
+
+Do not fabricate real student results, rankings, reviews or success statistics.
+
+# 31. DEPLOYMENT AND ENVIRONMENT CONFIGURATION
+
+Create:
+
+.env.example
+
+Include configuration variables for:
+
+- Database URL.
+- Authentication secrets.
+- Application URL.
+- Object storage credentials.
+- Razorpay credentials.
+- Email provider.
+- Monitoring.
+- Analytics.
+
+Never commit real secrets.
+
+Provide:
+
+- Local development setup.
+- Database migration commands.
+- Database seed commands.
+- Build commands.
+- Test commands.
+- Production deployment instructions.
+- Backup and restoration instructions.
+
+Use separate development, staging and production environments.
+
+# 32. PERFORMANCE AND SCALABILITY
+
+Optimize for an expanding student base.
+
+Implement:
+
+- Database indexing.
+- Pagination.
+- Efficient queries.
+- CDN for static assets.
+- Caching where appropriate.
+- Lazy loading.
+- Optimized images.
+- Background jobs for non-critical tasks.
+- Efficient test question retrieval.
+- Efficient result calculations.
+
+Do not use microservices prematurely.
+
+Maintain a modular monolithic architecture until real usage and operational requirements justify splitting services.
+
+# 33. MVP AND COMMERCIAL LAUNCH REQUIREMENTS
+
+The first commercial version must include:
+
+- Responsive public website.
+- Registration and authentication.
+- Student dashboard.
+- Admin dashboard.
+- Examination management.
+- Study material repository.
+- Model paper repository.
+- Centralized question bank.
+- Fully working mock test engine.
+- Result evaluation.
+- Performance analytics.
+- Premium subscriptions.
+- Payment verification.
+- Secure file access.
+- Hindi and English support.
+- Basic SEO.
+- Automated testing.
+- Production deployment.
+
+Initial content targets:
+
+- 20+ examinations.
+- 100+ study materials.
+- 50+ model papers.
+- 2,000+ reviewed practice questions.
+- 20+ full-length mock tests.
+- 50+ topic-wise quizzes.
+
+These are launch targets and must not be misrepresented as already available content.
+
+# 34. FINAL EXECUTION INSTRUCTIONS
+
+This section is mandatory.
+
+You must execute the entire development lifecycle.
+
+Do not simply return a plan.
+
+Do not stop after creating the homepage.
+
+Do not create non-functional buttons or dummy dashboards.
+
+Do not simulate database connectivity.
+
+Do not use hardcoded examination data in place of database-driven modules.
+
+Do not claim payment integration is complete without a working verified payment workflow.
+
+Do not claim the examination engine is complete without testing answer persistence, deadlines, submission and scoring.
+
+Do not skip security, automated tests or deployment documentation.
+
+Follow this execution procedure:
+
+STEP 1:
+Inspect the existing workspace and determine whether a project already exists. Preserve useful existing work.
+
+STEP 2:
+Create the architecture and implementation checklist.
+
+STEP 3:
+Initialize the application and database.
+
+STEP 4:
+Implement all functional modules in the defined development stages.
+
+STEP 5:
+After each stage, run tests and fix errors.
+
+STEP 6:
+Keep documentation and implementation status updated.
+
+STEP 7:
+Integrate all modules.
+
+STEP 8:
+Run full integration, security and end-to-end testing.
+
+STEP 9:
+Build and verify the production application.
+
+STEP 10:
+Prepare the deployment package and operational documentation.
+
+Maintain these project files:
+
+- README.md
+- docs/architecture.md
+- docs/database.md
+- docs/api.md
+- docs/security.md
+- docs/deployment.md
+- docs/testing.md
+- docs/implementation-status.md
+
+Update implementation-status.md after each completed stage.
+
+For every incomplete task, clearly state:
+- What is incomplete.
+- Why it is incomplete.
+- What is required to finish it.
+
+If external credentials or services are unavailable, implement the integration using a proper sandbox or development adapter and clearly document the production configuration needed.
+
+Never invent successful external integrations.
+
+Do not wait for approval between ordinary development stages. Make reasonable technical decisions independently and continue.
+
+Ask for user input only when an essential decision cannot safely or correctly be made without it.
+
+## FINAL ACCEPTANCE CRITERIA
+
+The project is complete only when:
+
+1. The application builds successfully.
+2. The database migrations work.
+3. Authentication works.
+4. All user roles and permissions work.
+5. Admins can manage examinations and content.
+6. Students can access permitted study materials.
+7. Students can attempt working mock tests.
+8. Answers persist reliably.
+9. The server controls test deadlines.
+10. Results calculate correctly.
+11. Analytics display actual student data.
+12. Premium products and subscriptions work.
+13. Payment verification is implemented and tested.
+14. Unauthorized access is blocked.
+15. The website works across desktop and mobile.
+16. Automated tests pass.
+17. Production configuration is documented.
+18. Backup and restoration procedures are documented.
+
+At the end, provide:
+
+- Completed features.
+- Application architecture.
+- Database summary.
+- Admin credentials setup instructions (never hardcode default production credentials).
+- Test execution report.
+- Security testing report.
+- Deployment instructions.
+- Remaining external dependencies.
+- Known limitations.
+
+## ULTIMATE OBJECTIVE
+
+Build CYBEROSH PARIKSHA into a reliable, scalable, secure, affordable and premium online examination preparation ecosystem.
+
+The platform must serve students from Bihar while supporting competitive examinations throughout India.
+
+Prioritize educational quality, examination accuracy, a reliable mock test experience, affordable access, strong cybersecurity and maintainable engineering.
+
+Build a real product, not merely a visual demonstration.
+
+Start development now and continue through every stage until the final acceptance criteria are satisfied.
