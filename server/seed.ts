@@ -60,14 +60,21 @@ function ensureBsebPapers() {
 
 export function seedDatabase() {
   initDatabase();
-  ensureBsebPapers();
 
-  // Check if already seeded
+  // Already seeded: only top up the BSEB catalogue (idempotent INSERT OR IGNORE).
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   if (userCount.count > 0) {
+    ensureBsebPapers();
     return;
   }
 
+  // A fresh database is seeded atomically. If anything fails part-way, nothing is kept, so the
+  // "already seeded" check above can never mistake a half-seeded database for a finished one.
+  db.transaction(seedFreshDatabase)();
+  ensureBsebPapers();
+}
+
+function seedFreshDatabase() {
   const salt = bcrypt.genSaltSync(10);
 
   // Development keeps the documented demo credentials. In production they would be public (they are in the
