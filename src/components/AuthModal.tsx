@@ -31,6 +31,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (mode === 'register' && password.length < 8) {
+      setError(t('Password must be at least 8 characters.', 'पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।'));
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -128,6 +133,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <span>{t('Continue with Google (Firebase Auth)', 'Google से लॉगिन करें (Firebase Auth)')}</span>
           </button>
 
+          {import.meta.env.DEV && (
           <div>
             <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5" />
@@ -152,6 +158,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             </div>
           </div>
+          )}
         </div>
 
         {/* Mode Switch Tabs */}

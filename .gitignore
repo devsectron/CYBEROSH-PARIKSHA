@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local SQLite database (created and seeded automatically on first run)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+uploads/
