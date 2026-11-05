@@ -1,18 +1,24 @@
+import './lib/config.js'; // loads .env before DATABASE_PATH is read below
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const dataDir = path.resolve('data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+// DATABASE_PATH is documented in .env.example; ":memory:" gives tests a throwaway database.
+const configuredPath = (process.env.DATABASE_PATH || '').trim();
+const dbPath = configuredPath === ':memory:'
+  ? ':memory:'
+  : path.resolve(configuredPath || path.join('data', 'cyberosh_pariksha.db'));
+
+if (dbPath !== ':memory:') {
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 }
 
-const dbPath = path.join(dataDir, 'cyberosh_pariksha.db');
 export const db = new Database(dbPath);
 
 // Enable WAL mode for high performance concurrency & foreign keys
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
 export function initDatabase() {
   db.exec(`
@@ -345,5 +351,13 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_questions_exam ON questions(exam_id);
     CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject_id);
     CREATE INDEX IF NOT EXISTS idx_materials_exam ON study_materials(exam_id);
+    CREATE INDEX IF NOT EXISTS idx_test_questions_test ON test_questions(test_id, question_order);
+    CREATE INDEX IF NOT EXISTS idx_test_sections_test ON test_sections(test_id, section_order);
+    CREATE INDEX IF NOT EXISTS idx_options_question ON question_options(question_id);
+    CREATE INDEX IF NOT EXISTS idx_attempts_user_test_status ON test_attempts(user_id, test_id, status);
+    CREATE INDEX IF NOT EXISTS idx_entitlements_user ON entitlements(user_id, is_active);
+    CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id);
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, item_type, item_id);
+    CREATE INDEX IF NOT EXISTS idx_current_affairs_date ON current_affairs(date);
   `);
 }
