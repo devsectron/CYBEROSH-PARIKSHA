@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db.js';
+import { optionalAuthenticate } from '../middleware/auth.js';
+import { redactLockedMaterials } from './content.js';
 
 export const examsRouter = Router();
 
@@ -68,7 +70,7 @@ examsRouter.get('/', (req: Request, res: Response) => {
 });
 
 // GET /api/v1/exams/:slug
-examsRouter.get('/:slug', (req: Request, res: Response) => {
+examsRouter.get('/:slug', optionalAuthenticate, (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
 
@@ -122,12 +124,12 @@ examsRouter.get('/:slug', (req: Request, res: Response) => {
 
     // Get study materials for this exam
     const materials = db.prepare(`
-      SELECT id, title, description, file_url, file_size_mb, access_level, language, author, downloads_count
+      SELECT id, exam_id, title, description, file_url, file_size_mb, access_level, language, author, downloads_count
       FROM study_materials
       WHERE exam_id = ?
       ORDER BY access_level ASC, created_at DESC
       LIMIT 10
-    `).all(exam.id);
+    `).all(exam.id) as any[];
 
     // Get model papers & pyqs
     const papers = db.prepare(`
@@ -142,7 +144,7 @@ examsRouter.get('/:slug', (req: Request, res: Response) => {
       exam,
       subjects: parsedSubjects,
       mockTests,
-      materials,
+      materials: redactLockedMaterials(materials, req.user),
       papers
     });
   } catch (err) {

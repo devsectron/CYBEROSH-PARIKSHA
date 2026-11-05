@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'cyberosh_super_secret_jwt_key_pariksha_prod_2026';
+import { JWT_SECRET, JWT_EXPIRY_SECONDS } from '../lib/config.js';
 
 export interface AuthenticatedUser {
   id: string;
@@ -24,50 +23,53 @@ export function generateToken(user: { id: string; email: string; role: string; f
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role, full_name: user.full_name },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { algorithm: 'HS256', expiresIn: JWT_EXPIRY_SECONDS }
   );
 }
 
+function bearerToken(req: Request): string | null {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) return null;
+  const token = header.slice('Bearer '.length).trim();
+  return token || null;
+}
+
+/** Resolves the token to an active user from the database (so role changes / suspensions apply immediately). */
+function resolveUser(token: string): AuthenticatedUser | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { id?: string };
+    if (!decoded || typeof decoded.id !== 'string') return null;
+    const user = db
+      .prepare('SELECT id, email, full_name, role, status FROM users WHERE id = ?')
+      .get(decoded.id) as AuthenticatedUser | undefined;
+    return user && user.status === 'active' ? user : null;
+  } catch {
+    return null;
+  }
+}
+
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = bearerToken(req);
+  if (!token) {
     res.status(401).json({ success: false, message: 'Authentication required. Please log in.' });
     return;
   }
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
-    const user = db.prepare('SELECT id, email, full_name, role, status FROM users WHERE id = ?').get(decoded.id) as AuthenticatedUser | undefined;
-
-    if (!user || user.status !== 'active') {
-      res.status(401).json({ success: false, message: 'User account is invalid or suspended.' });
-      return;
-    }
-
-    req.user = user;
-    next();
-  } catch (err) {
-    res.status(401).json({ success: false, message: 'Invalid or expired session token.' });
-  }
-}
-
-export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    next();
+  const user = resolveUser(token);
+  if (!user) {
+    res.status(401).json({ success: false, message: 'Invalid or expired session, or the account is suspended.' });
     return;
   }
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
-    const user = db.prepare('SELECT id, email, full_name, role, status FROM users WHERE id = ?').get(decoded.id) as AuthenticatedUser | undefined;
-    if (user && user.status === 'active') {
-      req.user = user;
-    }
-  } catch (err) {
-    // Continue anonymously
+  req.user = user;
+  next();
+}
+
+export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
+  const token = bearerToken(req);
+  if (token) {
+    const user = resolveUser(token);
+    if (user) req.user = user;
   }
   next();
 }

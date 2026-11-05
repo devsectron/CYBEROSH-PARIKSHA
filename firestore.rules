@@ -11,12 +11,16 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
+    function isOwnerEmail() {
       return isSignedIn() && (
         request.auth.token.email == 'devsectron@gmail.com' ||
-        request.auth.token.email == 'admin@cyberoshpariksha.in' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        request.auth.token.email == 'admin@cyberoshpariksha.in'
       );
+    }
+
+    function isAdmin() {
+      return isOwnerEmail() ||
+        (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
     }
 
     // Default deny catch-all
@@ -27,7 +31,9 @@ service cloud.firestore {
     // Users Collection
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create, update: if isOwner(userId) || isAdmin();
+      // A user may create their own profile as a student (owner emails excepted) and may never change its role.
+      allow create: if (isOwner(userId) && (request.resource.data.get('role', 'student') == 'student' || isOwnerEmail())) || isAdmin();
+      allow update: if (isOwner(userId) && request.resource.data.get('role', null) == resource.data.get('role', null)) || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -70,7 +76,10 @@ service cloud.firestore {
 
       // Student answers subcollection
       match /student_answers/{answerId} {
-        allow read, write: if isSignedIn();
+        allow read, write: if isSignedIn() && (
+          get(/databases/$(database)/documents/test_attempts/$(attemptId)).data.user_id == request.auth.uid ||
+          isAdmin()
+        );
       }
     }
 
@@ -94,15 +103,17 @@ service cloud.firestore {
 
     // Payments
     match /payments/{paymentId} {
+      // Payments are written only by the server (Admin SDK bypasses rules) or an admin; a client must never
+      // be able to mark its own payment as successful.
       allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
-      allow create, update: if isSignedIn();
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     // Entitlements
     match /entitlements/{entitlementId} {
+      // Entitlements grant paid access, so clients can read their own but never write them.
       allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
-      allow write: if isSignedIn() || isAdmin();
+      allow write: if isAdmin();
     }
 
     // Coupons
@@ -119,7 +130,9 @@ service cloud.firestore {
 
     // Bookmarks
     match /bookmarks/{bookmarkId} {
-      allow read, write: if isSignedIn();
+      allow read, delete: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.user_id == request.auth.uid && request.resource.data.user_id == request.auth.uid;
     }
 
     // Test Connection probe

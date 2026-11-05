@@ -21,6 +21,37 @@ interface PricingPageProps {
   onOpenAuth: (mode?: 'login' | 'register') => void;
 }
 
+interface RazorpaySuccess {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Razorpay) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Could not load Razorpay Checkout. Check your connection and try again.'));
+    document.body.appendChild(script);
+  });
+}
+
+async function openRazorpayCheckout(options: Record<string, unknown>): Promise<RazorpaySuccess> {
+  await loadRazorpayScript();
+  return new Promise((resolve, reject) => {
+    const checkout = new (window as any).Razorpay({
+      ...options,
+      currency: 'INR',
+      handler: (response: RazorpaySuccess) => resolve(response),
+      modal: { ondismiss: () => reject(new Error('Payment cancelled.')) }
+    });
+    checkout.on('payment.failed', (r: any) => reject(new Error(r?.error?.description || 'Payment failed.')));
+    checkout.open();
+  });
+}
+
 export const PricingPage: React.FC<PricingPageProps> = ({ onNavigate, onOpenAuth }) => {
   const { user, entitlements, refreshUser, t } = useAuth();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -100,16 +131,35 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onNavigate, onOpenAuth
         throw new Error(orderRes.message || 'Failed to create payment order.');
       }
 
-      const orderId = orderRes.order.order_id;
-      const paymentId = `pay_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-      const signature = `sig_test_${Date.now()}_verified`;
+      const order = orderRes.order;
+      let verifyPayload: { order_id: string; payment_id: string; signature: string };
 
-      // Step 2: Verify Razorpay Signature on backend
-      const verifyRes = await api.payments.verifyPayment({
-        order_id: orderId,
-        payment_id: paymentId,
-        signature
-      });
+      if (order.mode === 'live') {
+        // Real checkout: Razorpay returns a payment id and an HMAC signature that the server verifies.
+        const paid = await openRazorpayCheckout({
+          key: order.key_id,
+          order_id: order.order_id,
+          amount: order.amount_paise,
+          name: 'CYBEROSH PARIKSHA',
+          description: order.plan_name,
+          prefill: { name: user.full_name, email: user.email }
+        });
+        verifyPayload = {
+          order_id: paid.razorpay_order_id,
+          payment_id: paid.razorpay_payment_id,
+          signature: paid.razorpay_signature
+        };
+      } else {
+        // Development sandbox only: the server rejects this token when real keys are configured.
+        verifyPayload = {
+          order_id: order.order_id,
+          payment_id: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+          signature: `sig_test_${Date.now()}_verified`
+        };
+      }
+
+      // Step 2: Verify the payment signature on the backend
+      const verifyRes = await api.payments.verifyPayment(verifyPayload);
 
       if (verifyRes.success) {
         setPaymentSuccess(true);

@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { db, initDatabase } from './db.js';
+import { isProd } from './lib/config.js';
 
 function ensureBsebPapers() {
   try {
@@ -67,8 +69,20 @@ export function seedDatabase() {
   }
 
   const salt = bcrypt.genSaltSync(10);
-  const adminHash = bcrypt.hashSync('Admin@123', salt);
-  const studentHash = bcrypt.hashSync('Student@123', salt);
+
+  // Development keeps the documented demo credentials. In production they would be public (they are in the
+  // README), so passwords come from SEED_ADMIN_PASSWORD / SEED_STUDENT_PASSWORD, or are generated once and
+  // printed to the server log.
+  const resolveSeedPassword = (envName: string, devDefault: string, label: string): string => {
+    const configured = (process.env[envName] || '').trim();
+    if (configured) return configured;
+    if (!isProd) return devDefault;
+    const generated = crypto.randomBytes(12).toString('base64url');
+    console.warn(`[SEED] ${envName} not set. Generated one-time ${label} password: ${generated}  (change it after first login)`);
+    return generated;
+  };
+  const adminHash = bcrypt.hashSync(resolveSeedPassword('SEED_ADMIN_PASSWORD', 'Admin@123', 'admin'), salt);
+  const studentHash = bcrypt.hashSync(resolveSeedPassword('SEED_STUDENT_PASSWORD', 'Student@123', 'demo student'), salt);
 
   const now = new Date().toISOString();
 

@@ -30,8 +30,8 @@ CYBEROSH PARIKSHA is a comprehensive EdTech platform designed for competitive ex
 
 5. **MONETIZATION & RAZORPAY INTEGRATION**:
    - Flexible freemium plans (Monthly, Quarterly, Annual, Exam Pass).
-   - Coupon discount engine (`BIHAR50`, `WELCOME20`).
-   - Secure server-side signature verification.
+   - Coupon discount engine (`BIHAR50`, `WELCOME20`), priced and validated on the server.
+   - Strict HMAC-SHA256 signature verification, idempotent verification and replay protection.
 
 ## Technology Stack
 - **Frontend**: React 19, TypeScript, Tailwind CSS v4, Lucide Icons.
@@ -51,6 +51,19 @@ npm run dev
 http://localhost:3000
 ```
 
-## Seed Credentials
+## Seed Credentials (development only)
 - **Admin**: `admin@cyberoshpariksha.in` / `Admin@123`
 - **Student**: `student@cyberoshpariksha.in` / `Student@123`
+
+In production (`NODE_ENV=production`) these defaults are **not** used: set `SEED_ADMIN_PASSWORD` / `SEED_STUDENT_PASSWORD`,
+or a random password is generated and printed once in the server log on first start.
+
+## Production checklist
+1. `JWT_SECRET` set to a random string of 32+ characters (the server refuses to start otherwise).
+2. Real `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` set, or payments stay disabled. The simulated checkout is development-only.
+3. `TRUST_PROXY` set to the number of reverse proxies in front of the app.
+4. Deploy `firestore.rules` (`firebase deploy --only firestore:rules`).
+5. `npm run build`, then `NODE_ENV=production npm start`.
+
+## Testing
+`npm run lint` type-checks the project; `npm test` runs the unit checks and the API integration suite (real routes, in-memory database).
