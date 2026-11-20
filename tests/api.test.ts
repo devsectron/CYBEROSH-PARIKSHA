@@ -338,7 +338,9 @@ async function main() {
   assert((await call('GET', '/auth/me', { token: signFirebase({}, { key: otherKeys.privateKey }) })).status === 401, 'A token signed with a different key is rejected');
   assert((await call('GET', '/auth/me', { token: signFirebase({}, { kid: 'unknownkid' }) })).status === 401, 'A token with an unknown key id is rejected');
 
-  const linked = await call('GET', '/auth/me', { token: signFirebase({ email: email }, {}) });
+  // First Google sign-in (a Firebase uid the server has never seen) with the verified email of a password
+  // account: it links to that account instead of creating a duplicate.
+  const linked = await call('GET', '/auth/me', { token: signFirebase({ email: email }, { sub: `fbuid_link_${stamp}` }) });
   assert(linked.status === 200 && linked.json?.user?.id === me.json.user.id, 'A Google sign-in with the email of an existing account maps to that same account');
 
   // Same server-side rules apply to Google users: premium tests need an entitlement, free ones do not.
