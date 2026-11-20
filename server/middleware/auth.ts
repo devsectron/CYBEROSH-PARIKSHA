@@ -45,7 +45,12 @@ const USER_COLUMNS = 'SELECT id, email, full_name, role, status FROM users';
  * Google user gets a normal 'student' account with an unusable random password. Roles never come from the token.
  */
 function userForFirebaseIdentity(identity: FirebaseIdentity): AuthenticatedUser | null {
-  const find = () => db.prepare(`${USER_COLUMNS} WHERE email = ?`).get(identity.email) as AuthenticatedUser | undefined;
+  // The Firebase uid is assigned by Google and cannot be chosen by the caller, so it is the stable key: it
+  // keeps working if the account's email changes. A first sign-in falls back to the verified email, which
+  // links a Google sign-in to an account that was registered with a password.
+  const byUid = () => db.prepare(`${USER_COLUMNS} WHERE id = ?`).get(identity.uid) as AuthenticatedUser | undefined;
+  const byEmail = () => db.prepare(`${USER_COLUMNS} WHERE email = ?`).get(identity.email) as AuthenticatedUser | undefined;
+  const find = () => byUid() ?? byEmail();
 
   let user = find();
   if (!user) {

@@ -301,7 +301,7 @@ async function main() {
   const projectId = 'cyberosh-test-project';
   const signFirebase = (
     claims: Record<string, unknown> = {},
-    opts: { key?: crypto.KeyObject; kid?: string; audience?: string; expiresIn?: number } = {}
+    opts: { key?: crypto.KeyObject; kid?: string; audience?: string; expiresIn?: number; sub?: string } = {}
   ) =>
     jwt.sign(
       { email: `google_${stamp}@example.com`, email_verified: true, name: 'Google Student', ...claims },
@@ -309,7 +309,7 @@ async function main() {
       {
         algorithm: 'RS256',
         keyid: opts.kid || 'goodkid',
-        subject: `fbuid_${stamp}`,
+        subject: opts.sub || `fbuid_${stamp}`,
         audience: opts.audience || projectId,
         issuer: `https://securetoken.google.com/${projectId}`,
         expiresIn: opts.expiresIn ?? 3600
@@ -321,9 +321,16 @@ async function main() {
   assert(fbMe.status === 200 && fbMe.json?.user?.email === `google_${stamp}@example.com`, 'A valid Firebase ID token is accepted and creates a student account');
   assert(fbMe.json?.user?.role === 'student', 'The new account is a plain student');
 
-  const claimedAdmin = signFirebase({ role: 'admin', email: `google_admin_${stamp}@example.com` }, {});
+  // A brand-new Google user whose token claims to be an admin: the claim is ignored, the account is a student.
+  const claimedAdmin = signFirebase({ role: 'admin', admin: true, email: `google_admin_${stamp}@example.com` }, { sub: `fbuid_admin_${stamp}` });
   const adminTry = await call('GET', '/admin/analytics', { token: claimedAdmin });
   assert(adminTry.status === 403, 'A role claim inside the token is ignored: still no admin access');
+  const claimedMe = await call('GET', '/auth/me', { token: claimedAdmin });
+  assert(claimedMe.status === 200 && claimedMe.json?.user?.role === 'student', 'The account created for that token is a plain student');
+
+  // The Firebase uid is the stable key: the same uid with a different email still resolves to the same account.
+  const renamed = await call('GET', '/auth/me', { token: signFirebase({ email: `renamed_${stamp}@example.com` }, {}) });
+  assert(renamed.status === 200 && renamed.json?.user?.id === fbMe.json?.user?.id, 'The same Firebase uid keeps its account even if the email changes');
 
   assert((await call('GET', '/auth/me', { token: signFirebase({}, { audience: 'some-other-project' }) })).status === 401, 'A token issued for another Firebase project is rejected');
   assert((await call('GET', '/auth/me', { token: signFirebase({}, { expiresIn: -60 }) })).status === 401, 'An expired token is rejected');
