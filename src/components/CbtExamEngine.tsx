@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Question, TestSection, SavedAnswer } from '../types';
+import { QuestionPalette } from './QuestionPalette';
+import { paletteCounts } from '../services/questionPalette';
 import {
   Clock,
   Globe,
@@ -15,7 +17,9 @@ import {
   Eye,
   RotateCcw,
   Sparkles,
-  Info
+  Info,
+  LayoutGrid,
+  X
 } from 'lucide-react';
 
 interface CbtExamEngineProps {
@@ -44,6 +48,7 @@ export const CbtExamEngine: React.FC<CbtExamEngineProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
 
   // Per-question time spent tracking
   const questionStartTimeRef = useRef<number>(Date.now());
@@ -212,6 +217,9 @@ export const CbtExamEngine: React.FC<CbtExamEngineProps> = ({
   const handleJumpToQuestion = (targetIndex: number) => {
     saveCurrentQuestionState();
     setCurrentQIndex(targetIndex);
+    const sectionId = questions[targetIndex]?.section_id;
+    if (sectionId) setActiveSectionId(sectionId);
+    setIsPaletteOpen(false);
   };
 
   const executeSubmission = async () => {
@@ -231,29 +239,15 @@ export const CbtExamEngine: React.FC<CbtExamEngineProps> = ({
     }
   };
 
-  // Palette status calculation
-  const paletteStats = questions.reduce(
-    (acc, q, idx) => {
-      const ans = answers[q.id];
-      if (!ans || ans.status === 'not_visited') {
-        if (idx === currentQIndex) {
-          acc.not_answered++;
-        } else {
-          acc.not_visited++;
-        }
-      } else if (ans.status === 'answered') {
-        acc.answered++;
-      } else if (ans.status === 'marked_for_review') {
-        acc.marked_for_review++;
-      } else if (ans.status === 'answered_and_marked') {
-        acc.answered_and_marked++;
-      } else if (ans.status === 'not_answered') {
-        acc.not_answered++;
-      }
-      return acc;
-    },
-    { answered: 0, not_answered: 0, not_visited: 0, marked_for_review: 0, answered_and_marked: 0 }
-  );
+  // Palette status calculation (shared with the grid so the two can never disagree)
+  const counts = paletteCounts(questions, answers, currentQIndex);
+  const paletteStats = {
+    answered: counts.answered,
+    not_answered: counts.not_answered,
+    not_visited: counts.not_visited,
+    marked_for_review: counts.marked,
+    answered_and_marked: counts.answered_marked
+  };
 
   const formatTimer = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -525,110 +519,67 @@ export const CbtExamEngine: React.FC<CbtExamEngineProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Question Navigation Palette (30% width) */}
-        <div className="w-full lg:w-80 bg-slate-900 border-l border-slate-800 text-white flex flex-col">
-          {/* Palette Legend */}
-          <div className="p-4 border-b border-slate-800 bg-slate-950/60 text-xs">
-            <h3 className="font-bold text-slate-300 mb-3 uppercase tracking-wider text-[11px]">
-              {t('Question Palette Status', 'प्रश्नावली स्थिति')}
-            </h3>
-
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-md bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px]">
-                  {paletteStats.answered}
-                </span>
-                <span className="text-slate-300">{t('Answered', 'उत्तर दिया')}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-md bg-rose-600 text-white font-bold flex items-center justify-center text-[10px]">
-                  {paletteStats.not_answered}
-                </span>
-                <span className="text-slate-300">{t('Not Answered', 'उत्तर नहीं दिया')}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-md bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-[10px]">
-                  {paletteStats.not_visited}
-                </span>
-                <span className="text-slate-300">{t('Not Visited', 'देखा नहीं गया')}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-md bg-purple-600 text-white font-bold flex items-center justify-center text-[10px]">
-                  {paletteStats.marked_for_review}
-                </span>
-                <span className="text-slate-300">{t('Review', 'समीक्षा हेतु')}</span>
-              </div>
-
-              <div className="flex items-center gap-2 col-span-2">
-                <span className="relative w-5 h-5 rounded-md bg-purple-600 text-white font-bold flex items-center justify-center text-[10px]">
-                  {paletteStats.answered_and_marked}
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-slate-900" />
-                </span>
-                <span className="text-slate-300 truncate">
-                  {t('Answered & Marked for Review', 'उत्तर दिया व समीक्षा हेतु')}
-                </span>
-              </div>
-            </div>
+        {/* Right Side: Question Navigation Palette (desktop sidebar) */}
+        <aside className="hidden lg:flex w-80 shrink-0 border-l border-slate-800 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)]">
+          <div className="w-full">
+            <QuestionPalette
+              questions={questions}
+              sections={sections}
+              answers={answers}
+              currentIndex={currentQIndex}
+              counts={counts}
+              onJump={handleJumpToQuestion}
+              onSubmit={() => setShowSubmitModal(true)}
+              t={t}
+            />
           </div>
-
-          {/* Question Grid Buttons */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              {t('Jump to Question:', 'प्रश्न पर जाएं:')}
-            </p>
-
-            <div className="grid grid-cols-5 gap-2">
-              {questions.map((q, idx) => {
-                const ans = answers[q.id];
-                const isCurrent = idx === currentQIndex;
-
-                let colorClass = 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'; // Not Visited
-                let hasDot = false;
-
-                if (ans?.status === 'answered') {
-                  colorClass = 'bg-emerald-600 text-white border-emerald-500 font-bold shadow-sm';
-                } else if (ans?.status === 'answered_and_marked') {
-                  colorClass = 'bg-purple-600 text-white border-purple-500 font-bold';
-                  hasDot = true;
-                } else if (ans?.status === 'marked_for_review') {
-                  colorClass = 'bg-purple-600 text-white border-purple-500 font-bold';
-                } else if (ans?.status === 'not_answered' || (ans && !ans.selected_option)) {
-                  colorClass = 'bg-rose-600 text-white border-rose-500 font-bold';
-                }
-
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => handleJumpToQuestion(idx)}
-                    className={`relative h-9 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center ${colorClass} ${
-                      isCurrent ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 scale-105 z-10' : ''
-                    }`}
-                  >
-                    {idx + 1}
-                    {hasDot && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-slate-900" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Submit Test CTA */}
-          <div className="p-4 bg-slate-950 border-t border-slate-800">
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
-            >
-              <Send className="w-4 h-4" />
-              <span>{t('Submit Examination', 'परीक्षा सबमिट करें')}</span>
-            </button>
-          </div>
-        </div>
+        </aside>
       </div>
+
+      {/* Phones and tablets: floating button that opens the palette as a drawer */}
+      <button
+        onClick={() => setIsPaletteOpen(true)}
+        className="lg:hidden fixed bottom-4 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-slate-900 text-white border border-slate-700 shadow-xl text-sm font-bold"
+        aria-label={t('Open question palette', 'प्रश्नावली खोलें')}
+      >
+        <LayoutGrid className="w-4 h-4 text-amber-400" />
+        <span>
+          {counts.answered + counts.answered_marked}/{questions.length}
+        </span>
+      </button>
+
+      {isPaletteOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-slate-950/70">
+          <div className="w-80 max-w-[90vw] h-full flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between bg-slate-950 text-white px-4 py-2.5 border-b border-slate-800">
+              <span className="text-sm font-bold">{t('Question Palette', 'प्रश्नावली')}</span>
+              <button
+                onClick={() => setIsPaletteOpen(false)}
+                aria-label={t('Close', 'बंद करें')}
+                className="p-1 rounded hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0">
+              <QuestionPalette
+                questions={questions}
+                sections={sections}
+                answers={answers}
+                currentIndex={currentQIndex}
+                counts={counts}
+                onJump={handleJumpToQuestion}
+                onSubmit={() => {
+                  setIsPaletteOpen(false);
+                  setShowSubmitModal(true);
+                }}
+                t={t}
+              />
+            </div>
+          </div>
+          <button className="flex-1" aria-label="Close palette" onClick={() => setIsPaletteOpen(false)} />
+        </div>
+      )}
 
       {/* Confirmation Modal Before Submission */}
       {showSubmitModal && (
