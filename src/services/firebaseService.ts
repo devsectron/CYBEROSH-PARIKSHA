@@ -27,6 +27,7 @@ import {
   CurrentAffairsItem
 } from '../types';
 import { bseb12thCsTests, allBsebQuestions } from '../data/bsebCbtQuestions';
+import { OFFLINE_ATTEMPT_PREFIX, canPracticeOffline } from './attemptRouting';
 
 // Pre-seeded initial dataset for Firestore bootstrap
 const initialCategories: ExamCategory[] = [
@@ -872,12 +873,19 @@ export const firebaseService = {
     }
   },
 
-  startAttempt: async (testId: string, userId: string) => {
+  // OFFLINE PRACTICE MODE ONLY. The server is the sole authority for graded attempts (see src/services/api.ts);
+  // these functions run only when the server is unreachable. They are limited to free tests, never store a
+  // score, and their results are flagged as unverified.
+  startOfflineAttempt: async (testId: string, userId: string) => {
     try {
       const testDoc = await getDoc(doc(db, 'mock_tests', testId));
       const test = testDoc.exists() ? testDoc.data() as MockTest : initialTests.find(t => t.id === testId);
 
-      const attemptId = `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      if (!canPracticeOffline(test)) {
+        throw new Error('This test needs an internet connection and cannot be attempted offline.');
+      }
+
+      const attemptId = `${OFFLINE_ATTEMPT_PREFIX}${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       const now = new Date();
       const durationMins = test?.duration_minutes || 45;
       const deadline = new Date(now.getTime() + durationMins * 60 * 1000 + 15000).toISOString();
@@ -888,7 +896,7 @@ export const firebaseService = {
         started_at: now.toISOString(),
         server_deadline: deadline,
         status: 'in_progress',
-        time_taken_seconds: 0
+        offline: true
       };
 
       await setDoc(doc(db, 'test_attempts', attemptId), attemptData);
@@ -949,7 +957,7 @@ export const firebaseService = {
     }
   },
 
-  submitAttempt: async (attemptId: string) => {
+  submitOfflineAttempt: async (attemptId: string) => {
     try {
       const attemptRef = doc(db, 'test_attempts', attemptId);
       const attemptDoc = await getDoc(attemptRef);
@@ -992,17 +1000,11 @@ export const firebaseService = {
       const testMaxMarks = test?.total_marks || targetQuestions.length;
       const now = new Date().toISOString();
 
+      // Only the lifecycle is stored. The score is shown to the student but never persisted: a client-written
+      // score would be forgeable, and Firestore rules reject any attempt update that touches score fields.
       await updateDoc(attemptRef, {
         submitted_at: now,
-        status: 'submitted',
-        total_score: finalScore,
-        max_marks: testMaxMarks,
-        accuracy,
-        correct_count: correctCount,
-        incorrect_count: incorrectCount,
-        unattempted_count: unattemptedCount,
-        percentile: 95.0,
-        rank: 1
+        status: 'submitted'
       });
 
       return {
@@ -1016,8 +1018,9 @@ export const firebaseService = {
           correct_count: correctCount,
           incorrect_count: incorrectCount,
           unattempted_count: unattemptedCount,
-          percentile: 95.0,
-          rank: 1
+          // No peers are known offline, so there is no real rank or percentile to show.
+          percentile: 0,
+          rank: 0
         }
       };
     } catch (err) {
@@ -1025,7 +1028,7 @@ export const firebaseService = {
     }
   },
 
-  getAttemptResult: async (attemptId: string) => {
+  getOfflineAttemptResult: async (attemptId: string) => {
     try {
       const attemptDoc = await getDoc(doc(db, 'test_attempts', attemptId));
       const attempt = attemptDoc.exists() ? { id: attemptDoc.id, ...attemptDoc.data() } : null;

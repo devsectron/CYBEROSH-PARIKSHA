@@ -7,6 +7,10 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test_secret_that_is_definitely_long_enough_1234567890';
 process.env.RAZORPAY_KEY_ID = 'rzp_test_CyberoshDemoKey2026'; // demo keys => sandbox payment mode
 process.env.RAZORPAY_KEY_SECRET = 'rzp_secret_cyberoshDemoSecret2026';
+process.env.FIREBASE_PROJECT_ID = 'cyberosh-test-project';
+
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 let passed = 0;
 let failed = 0;
@@ -275,6 +279,91 @@ async function main() {
     const closed = db.prepare('SELECT status FROM test_attempts WHERE id = ?').get(expiredId) as any;
     assert(closed.status === 'submitted', 'The expired attempt was auto-submitted');
   }
+
+  // -------------------------------------------------------------------------
+  console.log('\n8. BSEB TESTS LIVE ON THE SERVER (they used to exist only in the browser bundle)');
+  const bsebTests = db.prepare("SELECT id FROM mock_tests WHERE id LIKE 'test_bseb_12_cs_set_%' ORDER BY id").all() as { id: string }[];
+  assert(bsebTests.length === 10, 'All 10 BSEB practice tests are in the server database');
+  const emptyBseb = bsebTests.filter(t => (db.prepare('SELECT COUNT(*) as c FROM test_questions WHERE test_id = ?').get(t.id) as any).c !== 5);
+  assert(emptyBseb.length === 0, 'Every BSEB set (including Sets 6-10) has its 5 questions');
+  const bsebDetail = await call('GET', '/tests/test_bseb_12_cs_set_10');
+  assert(bsebDetail.status === 200, 'GET /tests/test_bseb_12_cs_set_10 is served by the server');
+  const catalogue = await call('GET', '/tests?exam_id=exam_bseb_12_cs');
+  assert(catalogue.status === 200 && catalogue.json.tests.length === 10, 'The server catalogue lists the BSEB tests');
+
+  // -------------------------------------------------------------------------
+  console.log('\n9. GOOGLE / FIREBASE SIGN-IN IS VERIFIED BY THE SERVER');
+  const { setFirebaseCertsForTests } = await import('../server/lib/firebaseAuth.js');
+  const goodKeys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const otherKeys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  setFirebaseCertsForTests({ goodkid: goodKeys.publicKey.export({ type: 'spki', format: 'pem' }).toString() });
+
+  const projectId = 'cyberosh-test-project';
+  const signFirebase = (
+    claims: Record<string, unknown> = {},
+    opts: { key?: crypto.KeyObject; kid?: string; audience?: string; expiresIn?: number } = {}
+  ) =>
+    jwt.sign(
+      { email: `google_${stamp}@example.com`, email_verified: true, name: 'Google Student', ...claims },
+      (opts.key || goodKeys.privateKey) as any,
+      {
+        algorithm: 'RS256',
+        keyid: opts.kid || 'goodkid',
+        subject: `fbuid_${stamp}`,
+        audience: opts.audience || projectId,
+        issuer: `https://securetoken.google.com/${projectId}`,
+        expiresIn: opts.expiresIn ?? 3600
+      }
+    );
+
+  const fbToken = signFirebase();
+  const fbMe = await call('GET', '/auth/me', { token: fbToken });
+  assert(fbMe.status === 200 && fbMe.json?.user?.email === `google_${stamp}@example.com`, 'A valid Firebase ID token is accepted and creates a student account');
+  assert(fbMe.json?.user?.role === 'student', 'The new account is a plain student');
+
+  const claimedAdmin = signFirebase({ role: 'admin', email: `google_admin_${stamp}@example.com` }, {});
+  const adminTry = await call('GET', '/admin/analytics', { token: claimedAdmin });
+  assert(adminTry.status === 403, 'A role claim inside the token is ignored: still no admin access');
+
+  assert((await call('GET', '/auth/me', { token: signFirebase({}, { audience: 'some-other-project' }) })).status === 401, 'A token issued for another Firebase project is rejected');
+  assert((await call('GET', '/auth/me', { token: signFirebase({}, { expiresIn: -60 }) })).status === 401, 'An expired token is rejected');
+  assert((await call('GET', '/auth/me', { token: signFirebase({ email_verified: false }) })).status === 401, 'An unverified email is rejected');
+  assert((await call('GET', '/auth/me', { token: signFirebase({}, { key: otherKeys.privateKey }) })).status === 401, 'A token signed with a different key is rejected');
+  assert((await call('GET', '/auth/me', { token: signFirebase({}, { kid: 'unknownkid' }) })).status === 401, 'A token with an unknown key id is rejected');
+
+  const linked = await call('GET', '/auth/me', { token: signFirebase({ email: email }, {}) });
+  assert(linked.status === 200 && linked.json?.user?.id === me.json.user.id, 'A Google sign-in with the email of an existing account maps to that same account');
+
+  // Same server-side rules apply to Google users: premium tests need an entitlement, free ones do not.
+  const premiumTest = db
+    .prepare(
+      `SELECT t.id FROM mock_tests t
+        WHERE t.is_free = 0 AND t.is_published = 1
+          AND (SELECT COUNT(*) FROM test_questions tq WHERE tq.test_id = t.id) > 0 LIMIT 1`
+    )
+    .get() as { id: string } | undefined;
+  if (premiumTest) {
+    const blocked = await call('POST', '/attempts/start', { token: fbToken, body: { test_id: premiumTest.id } });
+    assert(blocked.status === 403 && blocked.json?.entitlement_required === true, 'A Google user without a plan is blocked from a premium test by the server');
+  } else {
+    console.log('  (skipped: no premium test with questions in seed data)');
+  }
+
+  // Full graded BSEB attempt as a Google user, all answers correct.
+  const bsebStart = await call('POST', '/attempts/start', { token: fbToken, body: { test_id: 'test_bseb_12_cs_set_10' } });
+  assert(bsebStart.status === 200 && bsebStart.json.questions.length === 5, 'A Google user can start a BSEB test on the server');
+  assert(bsebStart.json.questions.every((q: any) => !('correct_answer' in q)), 'BSEB questions are served without answers');
+  for (const q of bsebStart.json.questions as any[]) {
+    const correct = (db.prepare('SELECT correct_answer FROM questions WHERE id = ?').get(q.id) as any).correct_answer;
+    await call('POST', `/attempts/${bsebStart.json.attempt_id}/answers`, { token: fbToken, body: { question_id: q.id, selected_option: correct, status: 'answered' } });
+  }
+  const bsebSubmit = await call('POST', `/attempts/${bsebStart.json.attempt_id}/submit`, { token: fbToken });
+  assert(bsebSubmit.json?.result?.total_score === 5 && bsebSubmit.json.result.correct_count === 5, 'The server scores a perfect BSEB attempt 5 out of 5');
+  const bsebResult = await call('GET', `/attempts/${bsebStart.json.attempt_id}/result`, { token: fbToken });
+  assert(
+    bsebResult.status === 200 && bsebResult.json.subject_breakdown.some((b: any) => b.subject !== 'General'),
+    'BSEB results carry a real subject-wise breakdown'
+  );
 
   server.close();
   console.log('\n====================================================');

@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { db, initDatabase } from './db.js';
 import { isProd } from './lib/config.js';
+import { bseb12thCsTests, allBsebQuestions } from '../src/data/bsebCbtQuestions.js';
 
 function ensureBsebPapers() {
   try {
@@ -58,6 +59,77 @@ function ensureBsebPapers() {
   }
 }
 
+/**
+ * The ten BSEB Class 12 Computer Science CBT practice tests (and their questions) used to live only in the
+ * browser bundle. The server is the only place that may grade, so they are stored here too. Idempotent
+ * (INSERT OR IGNORE), so it also tops up databases that were created before this existed.
+ */
+function ensureBsebCbtTests() {
+  try {
+    const now = new Date().toISOString();
+    const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+
+    const insertSubject = db.prepare(
+      `INSERT OR IGNORE INTO subjects (id, exam_id, name, code, description, display_order) VALUES (?, 'exam_bseb_12_cs', ?, NULL, NULL, ?)`
+    );
+    const insertTest = db.prepare(
+      `INSERT OR IGNORE INTO mock_tests (id, exam_id, title, slug, description, test_type, duration_minutes, total_questions, total_marks, passing_marks, negative_marking, is_free, is_published, review_available, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    const insertQuestion = db.prepare(
+      `INSERT OR IGNORE INTO questions (id, exam_id, subject_id, question_type, difficulty, marks, negative_marks, question_en, question_hi, correct_answer, solution_en, solution_hi, status, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', NULL, ?)`
+    );
+    const insertOption = db.prepare(
+      `INSERT OR IGNORE INTO question_options (id, question_id, option_key, option_en, option_hi, is_correct) VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    const insertTestQuestion = db.prepare(
+      `INSERT OR IGNORE INTO test_questions (id, test_id, section_id, question_id, question_order, marks, negative_marks) VALUES (?, ?, NULL, ?, ?, ?, ?)`
+    );
+
+    db.transaction(() => {
+      const subjectIds = new Map<string, string>();
+      for (const q of allBsebQuestions) {
+        const name = q.subject_name || 'General';
+        if (!subjectIds.has(name)) {
+          const id = `sub_bseb_12_cs_${slugify(name)}`;
+          subjectIds.set(name, id);
+          insertSubject.run(id, name, subjectIds.size);
+        }
+      }
+
+      for (const t of bseb12thCsTests) {
+        insertTest.run(
+          t.id, t.exam_id, t.title, t.slug, t.description || null, t.test_type, t.duration_minutes,
+          t.total_questions, t.total_marks, t.passing_marks ?? 0, t.negative_marking ?? 0,
+          t.is_free ? 1 : 0, t.is_published ? 1 : 0, t.review_available ? 1 : 0, now
+        );
+      }
+
+      const orderByTest = new Map<string, number>();
+      for (const q of allBsebQuestions) {
+        const correct = (q.correct_answer || '').toUpperCase().trim();
+        insertQuestion.run(
+          q.id, q.exam_id || 'exam_bseb_12_cs', subjectIds.get(q.subject_name || 'General') || null,
+          q.question_type, q.difficulty, q.marks, q.negative_marks, q.question_en, q.question_hi || null,
+          correct, q.solution_en || null, q.solution_hi || null, now
+        );
+        for (const opt of q.options || []) {
+          const key = opt.option_key.toUpperCase();
+          insertOption.run(`${q.id}_${key}`, q.id, key, opt.option_en, opt.option_hi || null, key === correct ? 1 : 0);
+        }
+        if (q.test_id) {
+          const order = (orderByTest.get(q.test_id) || 0) + 1;
+          orderByTest.set(q.test_id, order);
+          insertTestQuestion.run(`tq_${q.test_id}_${order}`, q.test_id, q.id, order, q.marks, q.negative_marks);
+        }
+      }
+    })();
+  } catch (err) {
+    console.warn('[Seed] Error ensuring BSEB CBT tests in SQLite:', err);
+  }
+}
+
 export function seedDatabase() {
   initDatabase();
 
@@ -65,6 +137,7 @@ export function seedDatabase() {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   if (userCount.count > 0) {
     ensureBsebPapers();
+    ensureBsebCbtTests();
     return;
   }
 
@@ -72,6 +145,7 @@ export function seedDatabase() {
   // "already seeded" check above can never mistake a half-seeded database for a finished one.
   db.transaction(seedFreshDatabase)();
   ensureBsebPapers();
+  ensureBsebCbtTests();
 }
 
 function seedFreshDatabase() {

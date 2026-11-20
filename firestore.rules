@@ -70,8 +70,17 @@ service cloud.firestore {
     // Test Attempts
     match /test_attempts/{attemptId} {
       allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-      allow update: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      // Graded attempts live on the server (SQLite) and Firestore never decides a score. This collection is
+      // only used by the offline practice fallback, so a client may open an attempt and close it, but may not
+      // write any score, rank or result fields.
+      allow create: if isSignedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'in_progress'
+        && !request.resource.data.keys().hasAny(['total_score', 'max_marks', 'accuracy', 'correct_count', 'incorrect_count', 'unattempted_count', 'percentile', 'rank']);
+      allow update: if (isSignedIn()
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'submitted_at']))
+        || isAdmin();
       allow delete: if isAdmin();
 
       // Student answers subcollection

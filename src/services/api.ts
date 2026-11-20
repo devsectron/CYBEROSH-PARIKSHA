@@ -1,4 +1,8 @@
 import { firebaseService } from './firebaseService';
+import { auth } from '../lib/firebase';
+import { ApiError, isOfflineAttempt, isServerUnreachable } from './attemptRouting';
+
+export { ApiError } from './attemptRouting';
 
 const API_BASE = '/api/v1';
 
@@ -14,8 +18,22 @@ export function removeToken(): void {
   localStorage.removeItem('cyberosh_pariksha_token');
 }
 
+/**
+ * The credential to send to the server: the app's own session token (email/password sign-in), or, for
+ * "Continue with Google", the Firebase ID token, which the server verifies itself.
+ */
+async function getAuthToken(): Promise<string | null> {
+  const own = getToken();
+  if (own) return own;
+  try {
+    return auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
+  const token = await getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>)
@@ -25,18 +43,33 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+  } catch {
+    throw new ApiError('Cannot reach the server. Check your internet connection.', 0);
+  }
 
-  const data = await response.json();
+  let data: any = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || `Request failed with status ${response.status}`);
+    throw new ApiError(data?.message || `Request failed with status ${response.status}`, response.status, data);
+  }
+  if (data === null) {
+    throw new ApiError('Unexpected response from the server.', 502);
   }
 
   return data as T;
+}
+
+/** Marks results that were computed on this device (offline practice) so the UI never presents them as official. */
+function asOffline(value: unknown): any {
+  return { ...(value as Record<string, unknown>), offline_unverified: true };
 }
 
 export const api = {
@@ -85,50 +118,52 @@ export const api = {
   },
 
   tests: {
+    // The server catalogue is the source of truth: every id it returns is one the server can grade.
     getTests: async (params?: { exam_id?: string; category_id?: string; free_only?: boolean; search?: string }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.exam_id) searchParams.append('exam_id', params.exam_id);
+      if (params?.category_id) searchParams.append('category_id', params.category_id);
+      if (params?.free_only) searchParams.append('free_only', '1');
+      if (params?.search) searchParams.append('search', params.search);
+      const qs = searchParams.toString();
       try {
+        return await request<any>(`/tests${qs ? `?${qs}` : ''}`);
+      } catch (err) {
+        if (!isServerUnreachable(err)) throw err;
         const tests = await firebaseService.getTests(params);
         return { success: true, tests };
-      } catch {
-        const searchParams = new URLSearchParams();
-        if (params?.exam_id) searchParams.append('exam_id', params.exam_id);
-        if (params?.category_id) searchParams.append('category_id', params.category_id);
-        if (params?.free_only) searchParams.append('free_only', '1');
-        if (params?.search) searchParams.append('search', params.search);
-        const qs = searchParams.toString();
-        return request<any>(`/tests${qs ? `?${qs}` : ''}`);
       }
     },
     getTestDetails: (id: string) => request<any>(`/tests/${id}`),
+
+    // Server first. The browser only takes over when the server is unreachable, and only for free tests
+    // (see firebaseService.startOfflineAttempt). A 401/403/404 from the server is final, never a reason to fall back.
     startAttempt: async (test_id: string) => {
       try {
-        const userId = localStorage.getItem('cyberosh_user_id') || 'student_fb_user';
-        return await firebaseService.startAttempt(test_id, userId);
-      } catch {
-        return request<any>('/attempts/start', { method: 'POST', body: JSON.stringify({ test_id }) });
+        return await request<any>('/attempts/start', { method: 'POST', body: JSON.stringify({ test_id }) });
+      } catch (err) {
+        if (!isServerUnreachable(err)) throw err;
+        const uid = auth.currentUser?.uid;
+        if (!uid) throw err;
+        try {
+          return asOffline(await firebaseService.startOfflineAttempt(test_id, uid));
+        } catch {
+          throw err; // report the real problem (server unreachable), not the fallback's
+        }
       }
     },
-    saveAnswer: async (attemptId: string, answerData: any) => {
-      try {
-        return await firebaseService.saveAnswer(attemptId, answerData);
-      } catch {
-        return request<any>(`/attempts/${attemptId}/answers`, { method: 'POST', body: JSON.stringify(answerData) });
-      }
-    },
-    submitAttempt: async (attemptId: string) => {
-      try {
-        return await firebaseService.submitAttempt(attemptId);
-      } catch {
-        return request<any>(`/attempts/${attemptId}/submit`, { method: 'POST' });
-      }
-    },
-    getAttemptResult: async (attemptId: string) => {
-      try {
-        return await firebaseService.getAttemptResult(attemptId);
-      } catch {
-        return request<any>(`/attempts/${attemptId}/result`);
-      }
-    },
+    saveAnswer: (attemptId: string, answerData: any) =>
+      isOfflineAttempt(attemptId)
+        ? firebaseService.saveAnswer(attemptId, answerData)
+        : request<any>(`/attempts/${attemptId}/answers`, { method: 'POST', body: JSON.stringify(answerData) }),
+    submitAttempt: async (attemptId: string) =>
+      isOfflineAttempt(attemptId)
+        ? asOffline(await firebaseService.submitOfflineAttempt(attemptId))
+        : request<any>(`/attempts/${attemptId}/submit`, { method: 'POST' }),
+    getAttemptResult: async (attemptId: string) =>
+      isOfflineAttempt(attemptId)
+        ? asOffline(await firebaseService.getOfflineAttemptResult(attemptId))
+        : request<any>(`/attempts/${attemptId}/result`),
     getMyHistory: () => request<any>('/attempts/my-history')
   },
 

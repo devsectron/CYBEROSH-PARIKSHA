@@ -39,6 +39,8 @@ export const TestResultView: React.FC<TestResultViewProps> = ({
   const [expandedQId, setExpandedQId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // True when the attempt was scored on this device because the server was unreachable.
+  const [isOffline, setIsOffline] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadResult() {
@@ -47,6 +49,7 @@ export const TestResultView: React.FC<TestResultViewProps> = ({
         const res = await api.tests.getAttemptResult(attemptId);
         if (res.success) {
           setAttempt(res.attempt);
+          setIsOffline(Boolean(res.offline_unverified));
           setSubjectBreakdown(res.subject_breakdown || []);
           setQuestions(res.questions || []);
 
@@ -131,6 +134,16 @@ export const TestResultView: React.FC<TestResultViewProps> = ({
           </button>
         </div>
 
+        {isOffline && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+            <strong>{t('Offline practice result.', 'ऑफ़लाइन अभ्यास परिणाम।')}</strong>{' '}
+            {t(
+              'The server could not be reached, so this score was calculated on your device. It is not recorded in your history and has no rank or percentile.',
+              'सर्वर से संपर्क नहीं हो सका, इसलिए यह स्कोर आपके डिवाइस पर निकाला गया है। यह आपके इतिहास में दर्ज नहीं होगा और इसमें रैंक या पर्सेंटाइल नहीं है।'
+            )}
+          </div>
+        )}
+
         {/* Hero Scorecard Banner */}
         <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-blue-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -173,12 +186,12 @@ export const TestResultView: React.FC<TestResultViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-slate-800/80 text-center">
             <div className="p-3 rounded-xl bg-slate-800/50">
               <span className="text-[11px] text-slate-400 block mb-1">{t('All-India / State Rank', 'रैंक')}</span>
-              <span className="text-lg font-bold text-white">#{attempt.rank || 1}</span>
+              <span className="text-lg font-bold text-white">{isOffline || !attempt.rank ? '—' : `#${attempt.rank}`}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-800/50">
               <span className="text-[11px] text-slate-400 block mb-1">{t('Percentile', 'पर्सेंटाइल')}</span>
-              <span className="text-lg font-bold text-amber-400">{attempt.percentile}%ile</span>
+              <span className="text-lg font-bold text-amber-400">{isOffline || attempt.percentile == null ? '—' : `${attempt.percentile}%ile`}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-800/50">
